@@ -1,0 +1,64 @@
+name: Garnet LangChain CI
+
+on:
+  workflow_dispatch:
+
+jobs:
+  dep-install:
+    name: Core Dependency Install (Garnet)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Garnet Runtime Visibility
+        uses: garnet-org/action@v2
+        with:
+          api_token: ${{ secrets.GARNET_API_TOKEN }}
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install langchain-core dependencies
+        working-directory: libs/core
+        run: uv sync --dev
+
+      - name: List installed packages
+        working-directory: libs/core
+        run: uv pip list | head -60
+
+  lint-core:
+    name: Core Lint (Garnet)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Garnet Runtime Visibility
+        uses: garnet-org/action@v2
+        with:
+          api_token: ${{ secrets.GARNET_API_TOKEN }}
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install langchain-core dependencies
+        working-directory: libs/core
+        run: uv sync --group lint
+
+      - name: Run lint
+        working-directory: libs/core
+        run: make lint || true
+
